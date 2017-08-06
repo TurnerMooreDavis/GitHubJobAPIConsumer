@@ -9,3 +9,5 @@ Latest Rails: https://github.com/rails/rails
 next, you will need to `bundle install`
 
 open your console and type `rails s` to start local server
+
+open your browser of choice and go to http://localhost:3000/
