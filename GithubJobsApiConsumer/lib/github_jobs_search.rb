@@ -1,5 +1,7 @@
 require 'rest-client'
 module GithubJobsSearch
+  POPULAR_LANGUAGES = ['javscript', 'html/css','java','sql','python','php','c#','c++','c','ruby','swift','go','objective-c']
+  LOCATIONS = ['boston','san+fransisco','los+angeles','denver','boulder','chicago','new+york']
 
   def self.retrieve_jobs(location, language)
     url = "https://jobs.github.com/positions.json?location=#{location}&description=#{language}"
@@ -7,7 +9,7 @@ module GithubJobsSearch
     JSON.parse(body)
   end
 
-  def self.sort_by_required_experience(jobs, min_years)
+  def self.sort_by_required_experience(jobs)
     junior_jobs = []
     mid_jobs = []
     senior_jobs = []
@@ -20,13 +22,33 @@ module GithubJobsSearch
         mid_jobs << job
       end
     end
-    if min_years == 5
-      return senior_jobs
-    elsif min_years == 0
-      return junior_jobs
-    else
-      return mid_jobs
+    return {
+      "junior_jobs" => junior_jobs,
+      "mid_jobs" => mid_jobs,
+      "senior_jobs" => senior_jobs
+      "total_jobs" = > jobs.count
+    }
+  end
+
+  def self.sort_data_for_display(locations,languages)
+    data = []
+    locations.each do |location|
+      languages.each do |language|
+        jobs = self.retrieve_jobs(location,language)
+        sorted_jobs = self.sort_by_required_experience(jobs)
+        data << self.sort_data_for_location_language(sorted_jobs, location, language)
+      end
     end
+  end
+
+  def self.sort_data_for_location_language(sorted_jobs, location, language)
+    data = {}
+    data["location"] = location
+    data["language"] = language
+    data["junior"] = (sorted_jobs["junior_jobs"]count/ sorted_jobs["total_jobs"] *100)
+    data["mid"] = (sorted_jobs["mid_jobs"]count/ sorted_jobs["total_jobs"] *100)
+    data["senior"] = (sorted_jobs["senior_jobs"]count/ sorted_jobs["total_jobs"]*100)
+    return data
   end
 
   def self.moch_retrieve_jobs(location, language)

@@ -14,19 +14,16 @@ class GithubJobsSearchTest < ActiveSupport::TestCase
     assert @job_data.present?
   end
 
-  should "return return 4 positions for min 5 years of experience" do
-    sorted = GithubJobsSearch.sort_by_required_experience(@job_data,5)
-    assert sorted.count == 4
+  should "return jobs sorted by experience" do
+    sorted = GithubJobsSearch.sort_by_required_experience(@job_data)
+    assert sorted["senior_jobs"].count == 4
+    assert sorted["mid_jobs"].count == 3
+    assert sorted["junior_jobs"].count == 0
+    assert sorted["total_jobs"].count == 7
   end
 
-  should "return return 4 positions for min 3 years of experience" do
-    sorted = GithubJobsSearch.sort_by_required_experience(@job_data,3)
-    assert sorted.count == 3
-  end
-
-  should "return return 4 positions for min 0 years of experience" do
-    sorted = GithubJobsSearch.sort_by_required_experience(@job_data,0)
-    assert sorted.count == 0
+  should "return " do
+    
   end
 
 end
