@@ -1,15 +1,17 @@
 require 'rest-client'
 module GithubJobsSearch
   POPULAR_LANGUAGES = ['javscript', 'html/css','java','sql','python','php','c#','c++','c','ruby','swift','go','objective-c']
-  LOCATIONS = ['boston','san+fransisco','los+angeles','denver','boulder','chicago','new+york']
+  LOCATIONS = ['san+fransisco','boston','los+angeles','denver','boulder','chicago','new+york']
 
   def self.retrieve_jobs(location, language)
+    Rails.logger.info "retrieving jobs for #{location}, #{language}"
     url = "https://jobs.github.com/positions.json?location=#{location}&description=#{language}"
     body = RestClient::Request.execute(:method => :get, :url => url, :timeout => 10, :open_timeout => 10)
     JSON.parse(body)
   end
 
   def self.sort_by_required_experience(jobs)
+    Rails.logger.info "sorting jobs by experience"
     junior_jobs = []
     mid_jobs = []
     senior_jobs = []
@@ -25,8 +27,8 @@ module GithubJobsSearch
     return {
       "junior_jobs" => junior_jobs,
       "mid_jobs" => mid_jobs,
-      "senior_jobs" => senior_jobs
-      "total_jobs" = > jobs.count
+      "senior_jobs" => senior_jobs,
+      "total_jobs" => jobs.count
     }
   end
 
@@ -39,15 +41,24 @@ module GithubJobsSearch
         data << self.sort_data_for_location_language(sorted_jobs, location, language)
       end
     end
+    return data
   end
 
   def self.sort_data_for_location_language(sorted_jobs, location, language)
+    Rails.logger.info "sorting data by location language"
     data = {}
     data["location"] = location
     data["language"] = language
-    data["junior"] = (sorted_jobs["junior_jobs"]count/ sorted_jobs["total_jobs"] *100)
-    data["mid"] = (sorted_jobs["mid_jobs"]count/ sorted_jobs["total_jobs"] *100)
-    data["senior"] = (sorted_jobs["senior_jobs"]count/ sorted_jobs["total_jobs"]*100)
+    if sorted_jobs["total_jobs"] != 0
+      data["junior"] = (sorted_jobs["junior_jobs"].count/sorted_jobs["total_jobs"] *100)
+      data["mid"] = (sorted_jobs["mid_jobs"].count/sorted_jobs["total_jobs"] *100)
+      data["senior"] = (sorted_jobs["senior_jobs"].count/sorted_jobs["total_jobs"]*100)
+    else
+      data["junior"] = 0
+      data["mid"] = 0
+      data["senior"] = 0
+    end
+    Rails.logger.info "returning #{data}"
     return data
   end
 
